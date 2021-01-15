@@ -30,24 +30,34 @@ class SeatsStopsController extends BaseController
             $trip = $temp->id;
         }
 
-        // Used a different method of writing MySQL queries as a raw query
-        $free_seats = DB::select(
-            DB::raw(
-                "select * from stops AS s inner join seats_stop AS ss on s.id = ss.stop_id where s.trip_id = ".$trip." AND s.order_of_stop >= ".$start_dst_order." AND s.order_of_stop < ".$end_dst_order." AND 0 = 
-                    (
-                        SELECT SUM(st.is_booked) 
-                        FROM stops AS sx INNER JOIN seats_stop AS st INNER JOIN seats AS s1 ON st.seat_id = s1.id AND sx.id = st.stop_id
-                        WHERE sx.order_of_stop >= ".$start_dst_order." AND sx.order_of_stop < ".$end_dst_order." AND sx.trip_id = ".$trip." AND ss.seat_id = st.seat_id
-                    )
-                    AND s.order_of_stop = ".$start_dst_order
-                    )
-                );
+        // Incorrect stop names passed in URI
+        if($start_dst_order == 0 or $end_dst_order == 0 or $trip == 0) {
+
+            return $this->sendUnprocessableError('No such stops exist');
+
+        } else {
+
+            // Used a different method of writing MySQL queries as a raw query
+            $free_seats = DB::select(
+                DB::raw(
+                  "select * from stops AS s inner join seats_stop AS ss on s.id = ss.stop_id where s.trip_id = ".$trip." AND s.order_of_stop >= ".$start_dst_order." AND s.order_of_stop < ".$end_dst_order." AND 0 = 
+                      (
+                            SELECT SUM(st.is_booked) 
+                          FROM stops AS sx INNER JOIN seats_stop AS st INNER JOIN seats AS s1 ON st.seat_id = s1.id AND sx.id = st.stop_id
+                            WHERE sx.order_of_stop >= ".$start_dst_order." AND sx.order_of_stop < ".$end_dst_order." AND sx.trip_id = ".$trip." AND ss.seat_id = st.seat_id
+                       )
+                       AND s.order_of_stop = ".$start_dst_order
+                        )
+                  );
+                  
+            foreach ($free_seats as $seat) {
+                $seat->dest_order = $end_dst_order;
+            }
         
-        foreach ($free_seats as $seat) {
-            $seat->dest_order = $end_dst_order;
+            return $this->sendResponse($free_seats, 'Free seats retrieved successfully');
+
         }
-        
-        return $this->sendResponse($free_seats, 'Free seats retrieved successfully');
+
     }
 
     public function bookSeats(int $userId, int $tripId, int $src, int $dst, int $seatId) {
@@ -77,9 +87,9 @@ class SeatsStopsController extends BaseController
             return $this->sendResourceCreated($affected, 'Seats booked successfully');
         } else {
             if(sizeof($user) == 1) { // Seats cannot be double booked
-                return $this->sendResourceCreatedError('Could not book seats since they are already booked');
+                return $this->sendUnprocessableError('Could not book seats since they are already booked');
             } else { // User must exist in database
-                return $this->sendResourceCreatedError('User not found');
+                return $this->sendUnprocessableError('User not found');
             }
             
         }

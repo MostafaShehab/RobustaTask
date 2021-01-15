@@ -34,7 +34,7 @@ class BaseController extends Controller
         return response()->json($response, 201);
     }
 
-    public function sendResourceCreatedError($message)
+    public function sendUnprocessableError($message)
     {
     	$response = [
             'success' => false,
