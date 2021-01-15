@@ -24,6 +24,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', [RegisterController::class, 'login']);
 
+// Force authentication on these routes (must send access token with request)
 Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/freaseats/{source}/{destination}', function ($src, $dst) {
         return (new SeatsStopsController)->freeSeats($src, $dst);

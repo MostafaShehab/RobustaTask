@@ -11,6 +11,7 @@ class SeatsStopsController extends BaseController
     
     public function freeSeats(string $src, string $dst) {
 
+        // Subquery to obtain the trip ID as well as the order of the stops
         $sub_query = DB::table(DB::raw('stops as st1'))
             ->join('trips', 'trips.id', '=', 'st1.trip_id')
             ->join(DB::raw('stops as st2'), 'trips.id', '=', 'st2.trip_id')
@@ -22,12 +23,14 @@ class SeatsStopsController extends BaseController
         $start_dst_order = 0;
         $end_dst_order = 0;
         $trip = 0;
+
         foreach ($sub_query as $temp) {
             $start_dst_order = $temp->o1;
             $end_dst_order = $temp->o2;
             $trip = $temp->id;
         }
 
+        // Used a different method of writing MySQL queries as a raw query
         $free_seats = DB::select(
             DB::raw(
                 "select * from stops AS s inner join seats_stop AS ss on s.id = ss.stop_id where s.trip_id = ".$trip." AND s.order_of_stop >= ".$start_dst_order." AND s.order_of_stop < ".$end_dst_order." AND 0 = 
@@ -51,33 +54,31 @@ class SeatsStopsController extends BaseController
         
         // Validate that this user exists
         $user = DB::table('users')
-                    ->where('id', $userId)
-                    ->get();
-
-                    error_log(($user));
+            ->where('id', $userId)
+            ->get();
         
         // Validate that those seats are still available
         $free = DB::table(DB::raw('seats_stop AS ss'))
-                    ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
-                    ->where('ss.seat_id', $seatId)
-                    ->where('s.trip_id', $tripId)
-                    ->whereRaw('s.order_of_stop >= '.$src.' AND s.order_of_stop < '.$dst)
-                    ->where('ss.is_booked', 0)
-                    ->get();
+            ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
+            ->where('ss.seat_id', $seatId)
+            ->where('s.trip_id', $tripId)
+            ->whereRaw('s.order_of_stop >= '.$src.' AND s.order_of_stop < '.$dst)
+            ->where('ss.is_booked', 0)
+            ->get();
 
-        if(sizeof($user) == 1 and sizeof($free) == $dst - $src) {
+        if(sizeof($user) == 1 and sizeof($free) == $dst - $src) { // All checks passed
             $affected = DB::table(DB::raw('seats_stop AS ss'))
-                        ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
-                        ->where('ss.seat_id', $seatId)
-                        ->where('s.trip_id', $tripId)
-                        ->whereRaw('s.order_of_stop >= '.$src.' AND s.order_of_stop < '.$dst)
-                        ->update(['ss.is_booked' => 1, "ss.booking_user_id" => $userId]);
+                ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
+                ->where('ss.seat_id', $seatId)
+                ->where('s.trip_id', $tripId)
+                ->whereRaw('s.order_of_stop >= '.$src.' AND s.order_of_stop < '.$dst)
+                ->update(['ss.is_booked' => 1, "ss.booking_user_id" => $userId]);
         
             return $this->sendResourceCreated($affected, 'Seats booked successfully');
         } else {
-            if(sizeof($user) == 1) {
+            if(sizeof($user) == 1) { // Seats cannot be double booked
                 return $this->sendResourceCreatedError('Could not book seats since they are already booked');
-            } else {
+            } else { // User must exist in database
                 return $this->sendResourceCreatedError('User not found');
             }
             
