@@ -49,6 +49,13 @@ class SeatsStopsController extends BaseController
 
     public function bookSeats(int $userId, int $tripId, int $src, int $dst, int $seatId) {
         
+        // Validate that this user exists
+        $user = DB::table('users')
+                    ->where('id', $userId)
+                    ->get();
+
+                    error_log(($user));
+        
         // Validate that those seats are still available
         $free = DB::table(DB::raw('seats_stop AS ss'))
                     ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
@@ -58,9 +65,7 @@ class SeatsStopsController extends BaseController
                     ->where('ss.is_booked', 0)
                     ->get();
 
-        error_log(sizeof($free));
-
-        if(sizeof($free) == $dst - $src) {
+        if(sizeof($user) == 1 and sizeof($free) == $dst - $src) {
             $affected = DB::table(DB::raw('seats_stop AS ss'))
                         ->join(DB::raw('stops AS s'), 'ss.stop_id', '=', 's.id')
                         ->where('ss.seat_id', $seatId)
@@ -70,7 +75,12 @@ class SeatsStopsController extends BaseController
         
             return $this->sendResourceCreated($affected, 'Seats booked successfully');
         } else {
-            return $this->sendResourceCreatedError('Could not book seats since they are already booked');
+            if(sizeof($user) == 1) {
+                return $this->sendResourceCreatedError('Could not book seats since they are already booked');
+            } else {
+                return $this->sendResourceCreatedError('User not found');
+            }
+            
         }
         
     }
