@@ -1,62 +1,51 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Fleet Management System
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+#### This task requires having MySQL Command Line Interface application or any server (for exmple myphpadmin) to create the database and populate the tables. It also requires having installed PHP8.0.1 and Composer to run the commands. Please make sure to install all of those before attempting the following steps.
+#
 
-## About Laravel
+## Steps to run this project:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Download a zipped version of this repo and unzip it in a new folder.
+2. Run the following command in terminal inside the unzipped folder
+```shell session
+composer install
+```
+3. In the MySQL CLI, create a new database using the following command where `database_name` can be changed to any other name 
+```sql
+CREATE DATABASE database_name
+```
+4. Duplicate the `.env-example` and rename it to `.env`
+5. In the new `.env` file change the `DB_DATABASE` environment variable to the name of the database you created. You might need to enter the username and password of the MySQL server if you set them up, if not leave them as is.
+6. Back in the terminal, run the following command
+```shell session
+php artisan migrate
+```
+7. To dump the data into the database, first edit the file `sql_dump.sql` by changing the database name in the `USE` statement to your database name. Then in the MySQL CLI run the following command. You might need to write the full path to the SQL file.
+```sql
+source sql_dump.sql
+```
+8. Finally, in the terminal (again) run the following command to run the application
+```shell session
+php artisan serve
+```
+#
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Testing the APIs in Postman
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+#### In all the following API calls, make sure to add the following header: `accept: application/json`
 
-## Learning Laravel
+1. First, we will register a user.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+![alt text](Register.jpg)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. Next we will login with the same user to obtain the access token used for authenticating the user.
 
-## Laravel Sponsors
+![alt text](Login.jpg)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+3. After copying token supplied in the http response we will test the first API which retrieves all free seats between 2 stops. The URI is http://localhost:8000/api/freaseats/Cairo/Asyut where `Cairo` is the start and `Asyut` is the destination. Notice that in the Authorization tab in Postman, Bearer Token is selected and the Access Token is inserted on the right. If a wrong token is used, the API call will return `unauthenticated`.
 
-### Premium Partners
+![alt text](Free.jpg)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/)**
-- **[OP.GG](https://op.gg)**
+4. For the second API, we will repeat the step of inserting the token and the URL is http://localhost:8000/api/book/1/1/2/3/1 where the numbers are the user ID, trip ID, start stop order in trip, destination stop order in trip and seat ID respectively. All this data can be retrieved from the login and freeseats API calls and should usually be handled by the frontend. For now the data is manually inserted. This call in plain English attempts to book seat number 1 in trip number 1 (from Cairo to Asyut) from stop AlFayyum to stop AlMinya. Sending the same API call again will return an error that the seats are already booked. An interesting case to try is http://localhost:8000/api/book/1/1/1/4/1
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+![alt text](Book.jpg)
