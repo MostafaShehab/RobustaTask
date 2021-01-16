@@ -24,6 +24,7 @@ class SeatsStopsController extends BaseController
         $end_dst_order = 0;
         $trip = 0;
 
+        // An assumption is made here for simplification that no 2 stops occur together in more than 1 trip
         foreach ($sub_query as $temp) {
             $start_dst_order = $temp->o1;
             $end_dst_order = $temp->o2;
@@ -49,7 +50,8 @@ class SeatsStopsController extends BaseController
                        AND s.order_of_stop = ".$start_dst_order
                         )
                   );
-                  
+            
+            // This extra field is added having the next API call for booking in mind
             foreach ($free_seats as $seat) {
                 $seat->dest_order = $end_dst_order;
             }
