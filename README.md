@@ -46,6 +46,26 @@ php artisan serve
 
 ![alt text](Free.jpg)
 
-4. For the second API, we will repeat the step of inserting the token and the URL is http://localhost:8000/api/book/1/1/2/3/1 where the numbers are the user ID, trip ID, start stop order in trip, destination stop order in trip and seat ID respectively. All this data can be retrieved from the login and freeseats API calls and should usually be handled by the frontend. For now the data is manually inserted. This call in plain English attempts to book by user number 1 in trip number 1 (from Cairo to Asyut) from stop AlFayyum (order number 2) to stop AlMinya (order number 3) seat number 1. Sending the same API call again will return an error that the seats are already booked. An interesting case to try is http://localhost:8000/api/book/1/1/1/4/1
+4. For the second API, we will repeat the step of inserting the token and the URL is http://localhost:8000/api/book/1/1/2/3/1 where the numbers are the user ID, trip ID, start stop order in trip, destination stop order in trip and seat ID respectively. All this data can be retrieved from the login and freeseats API calls and should usually be handled by the frontend. For now the data is manually inserted. This call in plain English attempts to book for user number 1 in trip number 1 (from Cairo to Asyut) from stop AlFayyum (order number 2) to stop AlMinya (order number 3) seat number 1. Sending the same API call again will return an error that the seats are already booked. An interesting case to try is http://localhost:8000/api/book/1/1/1/4/1
 
 ![alt text](Book.jpg)
+
+#
+
+## Running unit tests
+
+#### To run the unit tests you need to have sqlite working for your PHP installation. Sqlite was used as a temporary in-memory database for testing to avoid tampering with our actual database. To check if sqlite is allowed, in your PHP installation folder open the `php.ini` file and uncomment the following line (add it if does not exist).
+
+```ini
+extension=pdo_sqlite
+```
+
+#### If you have followed the above instructions to setup this project, then simply run the following command in the terminal to run the tests
+
+```shell
+php artisan test
+```
+
+#### If not jus follow steps 1 & 2 then run the tests. This is a sample run output in the terminal with all tests passed.
+
+![alt text](Test.jpg)
