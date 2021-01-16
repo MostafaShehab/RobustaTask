@@ -14,7 +14,7 @@ composer install
 ```sql
 CREATE DATABASE database_name
 ```
-4. Duplicate the `.env-example` and rename it to `.env`
+4. Duplicate the `.env.example` and rename it to `.env`
 5. In the new `.env` file change the `DB_DATABASE` environment variable to the name of the database you created. You might need to enter the username and password of the MySQL server if you set them up, if not leave them as is.
 6. Back in the terminal, run the following command
 ```shell session
@@ -46,6 +46,6 @@ php artisan serve
 
 ![alt text](Free.jpg)
 
-4. For the second API, we will repeat the step of inserting the token and the URL is http://localhost:8000/api/book/1/1/2/3/1 where the numbers are the user ID, trip ID, start stop order in trip, destination stop order in trip and seat ID respectively. All this data can be retrieved from the login and freeseats API calls and should usually be handled by the frontend. For now the data is manually inserted. This call in plain English attempts to book seat number 1 in trip number 1 (from Cairo to Asyut) from stop AlFayyum to stop AlMinya. Sending the same API call again will return an error that the seats are already booked. An interesting case to try is http://localhost:8000/api/book/1/1/1/4/1
+4. For the second API, we will repeat the step of inserting the token and the URL is http://localhost:8000/api/book/1/1/2/3/1 where the numbers are the user ID, trip ID, start stop order in trip, destination stop order in trip and seat ID respectively. All this data can be retrieved from the login and freeseats API calls and should usually be handled by the frontend. For now the data is manually inserted. This call in plain English attempts to book by user number 1 in trip number 1 (from Cairo to Asyut) from stop AlFayyum (order number 2) to stop AlMinya (order number 3) seat number 1. Sending the same API call again will return an error that the seats are already booked. An interesting case to try is http://localhost:8000/api/book/1/1/1/4/1
 
 ![alt text](Book.jpg)
